@@ -1,5 +1,6 @@
 import React from "react";
 import Navigation from "./Navigation";
+import { useEffect, useState } from "react";
 
 const purchases = [
   {
@@ -29,37 +30,54 @@ const purchases = [
 ];
 
 const History = () => {
+  const userDetails = JSON.parse(sessionStorage.getItem("user"));
+  const [transactionData, setTransactionData] = useState([]);
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:1337/api/transactions?filters[customer_name][$eq]=${userDetails.name}`
+          );
+          const data = await response.json();
+          console.log(data.data)
+          setTransactionData(data.data)
+        } catch (error) {
+          console.error("Error fetching transaction data:", error);
+        } finally {;
+        }
+      };
+
+      fetchData();
+  }, []);
   return (
     <>
       <Navigation />
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-bold mb-6 text-[#4B3D8F] flex justify-center">
-          Purchase History
+      <div className="container mx-auto p-4 border">
+        <h2 className="text-2xl font-bold mb-4 text-[#4B3D8F] mt-4 flex">
+          History
         </h2>
-        <div className="overflow-x-auto border shadow-lg">
-          <table className="table table-zebra w-full">
-            <thead>
-              <tr>
-                <th className="text-left">Date</th>
-                <th className="text-left">Product Name</th>
-                <th className="text-left">Quantity</th>
-                <th className="text-left">Price</th>
-                <th className="text-left">Total</th>
+        <hr />
+        <table className="table table-zebra w-full border">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Product Name</th>
+              <th>Quantity</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactionData.map((purchase) => (
+              <tr key={purchase.id}>
+                <td>{purchase.date}</td>
+                <td>{purchase.product_name}</td>
+                <td>{purchase.quantity}</td>
+                <td>₱{purchase.total}</td>
               </tr>
-            </thead>
-            <tbody>
-              {purchases.map((purchase) => (
-                <tr key={purchase.id}>
-                  <td>{purchase.date}</td>
-                  <td>{purchase.productName}</td>
-                  <td>{purchase.quantity}</td>
-                  <td>${purchase.price.toFixed(2)}</td>
-                  <td>${purchase.total.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );
