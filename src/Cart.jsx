@@ -46,6 +46,14 @@ const Cart = ({ onClose }) => {
     setSelectAll(!selectAll);
   };
 
+  const handleQuantityChange = (productId, newQuantity) => {
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
   const removeFromCart = async (item) => {
     try {
       const response = await fetch(
@@ -58,7 +66,9 @@ const Cart = ({ onClose }) => {
         }
       );
       if (response.ok) {
-        setCart((prevCart) => prevCart.filter((cartItem) => cartItem.id !== item.id));
+        setCart((prevCart) =>
+          prevCart.filter((cartItem) => cartItem.id !== item.id)
+        );
         setSelectedItems((prevSelectedItems) =>
           prevSelectedItems.filter((id) => id !== item.id)
         );
@@ -72,13 +82,12 @@ const Cart = ({ onClose }) => {
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-  
     const today = new Date();
     const formattedDate = today.toISOString().split("T")[0];
     const selectedCartItems = cart.filter((item) =>
       selectedItems.includes(item.id)
     );
-  
+
     for (const item of selectedCartItems) {
       const cartData = {
         data: {
@@ -90,9 +99,9 @@ const Cart = ({ onClose }) => {
           branch_name: item.branch_name,
         },
       };
-  
+
       const jsonString = JSON.stringify(cartData);
-  
+
       try {
         const response = await fetch("http://localhost:1337/api/transactions", {
           method: "POST",
@@ -101,7 +110,7 @@ const Cart = ({ onClose }) => {
           },
           body: jsonString,
         });
-  
+
         if (response.ok) {
           const data = await response.json();
           console.log("Item processed:", data);
@@ -113,10 +122,10 @@ const Cart = ({ onClose }) => {
         console.error("Error:", error);
       }
     }
-  
+
     handleDelete(selectedCartItems);
   };
-  
+
   const handleDelete = async (items) => {
     for (const item of items) {
       try {
@@ -129,10 +138,12 @@ const Cart = ({ onClose }) => {
             },
           }
         );
-  
+
         if (response.ok) {
           const data = await response.json();
-          setCart((prevCart) => prevCart.filter((cartItem) => cartItem.id !== item.id));
+          setCart((prevCart) =>
+            prevCart.filter((cartItem) => cartItem.id !== item.id)
+          );
           setSelectedItems((prevSelectedItems) =>
             prevSelectedItems.filter((id) => id !== item.id)
           );
@@ -148,7 +159,7 @@ const Cart = ({ onClose }) => {
     alert("Checkout successful");
     window.location.reload();
   };
-  
+
   const totalPrice = cart.reduce(
     (acc, item) =>
       selectedItems.includes(item.id) ? acc + item.price * item.quantity : acc,
@@ -188,7 +199,19 @@ const Cart = ({ onClose }) => {
                     {item.product_name}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    ${item.price.toFixed(2)} x {item.quantity}
+                    ${item.price.toFixed(2)} x{" "}
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      min="1"
+                      onChange={(e) =>
+                        handleQuantityChange(
+                          item.id,
+                          parseInt(e.target.value, 10)
+                        )
+                      }
+                      className="border border-[#4B3D8F] rounded-md p-2 w-20 text-center"
+                    />
                   </p>
                 </div>
                 <p className="text-lg font-bold text-[#4B3D8F]">
@@ -206,6 +229,9 @@ const Cart = ({ onClose }) => {
         )}
       </div>
       <div className="text-right mt-6">
+        <p className="text-lg font-bold text-[#4B3D8F]">
+          Total Price: ${totalPrice.toFixed(2)}
+        </p>
         <button
           className="bg-[#4B3D8F] hover:bg-[#3D2F7F] text-white px-6 py-2 rounded-md mt-4"
           onClick={handleCheckout}

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Cart from "./Cart";
+import { Link } from "react-router-dom";
 
 const Navigation = () => {
   const [isCartVisible, setCartVisible] = useState(false);
@@ -9,37 +10,41 @@ const Navigation = () => {
 
   return (
     <>
-      <header className="border-b">
-        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <a href="/dashboard" className="text-2xl font-bold text-[#4B3D8F]">
-            Sample Site
+      <header className="border-b bg-[#4B3D8F]">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <a
+            href="/dashboard"
+            className="text-2xl font-bold text-white tracking-widest"
+          >
+            Bazzar.
           </a>
           <nav className="hidden md:block">
-            <ul className="flex space-x-6">
-              <li>
+            <ul className="flex space-x-6 items-center">
+              <li className="flex items-center space-x-1">
+                <span className="text-white text-lg">🕒</span>
                 <a
                   href="/history"
-                  className="text-[#4B3D8F] font-bold hover:underline"
+                  className="text-white font-bold hover:underline"
                 >
-                  Purchase History
+                  Purchased
                 </a>
               </li>
-              <li>
+              <li className="flex items-center space-x-1">
+                <span className="text-white text-lg">🛒</span>
                 <span
-                  className="text-[#4B3D8F] font-bold hover:underline cursor-pointer"
+                  className="text-white font-bold hover:underline cursor-pointer"
                   onClick={handleCartClick}
                 >
                   Cart
                 </span>
               </li>
-              <li>
-                <a
-                  href="/"
-                  className="text-[#4B3D8F] font-bold hover:underline"
-                >
-                  Logout
-                </a>
-              </li>
+              <Link to="/">
+                <li className="flex items-center space-x-2">
+                  <button className="rounded-full bg-white px-5 p-1">
+                    Logout
+                  </button>
+                </li>
+              </Link>
             </ul>
           </nav>
         </div>

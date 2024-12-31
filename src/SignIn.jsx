@@ -8,11 +8,14 @@ function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState("customers");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true); // Set loading state to true when starting the request
+
     try {
       const response = await fetch(
         `http://localhost:1337/api/${role}?filters[email][$eq]=${email}`
@@ -23,11 +26,13 @@ function SignIn() {
       }
       if (data.data.length === 0) {
         setError("Wrong Credentials");
+        setIsLoading(false); // Set loading state to false on error
         return;
       }
       const user = data.data[0];
       if (user.password !== password) {
         setError("Incorrect password.");
+        setIsLoading(false); // Set loading state to false on error
         return;
       }
       sessionStorage.setItem("user", JSON.stringify(user));
@@ -38,11 +43,12 @@ function SignIn() {
       }
     } catch (err) {
       setError(err.message || "An error occurred while logging in.");
+      setIsLoading(false); // Set loading state to false on error
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center min-h-screen bg-base-200">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border">
         <div className="flex justify-center mb-6">
           <a href="/" className="text-3xl font-bold text-[#4B3D8F]">
@@ -98,23 +104,27 @@ function SignIn() {
           <div className="mb-4">
             <button
               type="submit"
-              className="w-full py-2 text-white rounded-lg bg-[#4B3D8F]"
+              className="w-full py-2 text-white rounded-lg bg-[#4B3D8F] flex justify-center items-center"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? (
+                <>
+                  <div className="w-6 h-6 border-white rounded-full animate-spin"></div>
+                  <p>Loading...</p>
+                </>
+              ) : (
+                "Sign in"
+              )}
             </button>
           </div>
-          <div className="divider before:bg-black after:bg-black font-bold">
-            or
-          </div>
-          <div className="text-center">
-            <Link to="/signup">
-              <button
-                type="submit"
-                className="w-full py-2 text-white rounded-lg bg-[#4B3D8F]"
-              >
-                Create an Account
-              </button>
-            </Link>
+
+          <div className="text-center mt-5">
+            <p className="text-sm">
+              Don't have an account? &nbsp;
+              <Link to="/signup" className="underline">
+                Sign up
+              </Link>
+            </p>
           </div>
         </form>
       </div>

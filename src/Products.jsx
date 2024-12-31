@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Navigation from "./Navigation";
+import { AiFillProduct } from "react-icons/ai";
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -10,18 +11,16 @@ function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState(""); 
-  const [selectedCategory, setSelectedCategory] = useState(""); 
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const userDetails = JSON.parse(sessionStorage.getItem("user"));
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:1337/api/products`
-        );
+        const response = await fetch(`http://localhost:1337/api/products`);
         const data = await response.json();
-        setProducts(data.data || []); 
+        setProducts(data.data || []);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -31,7 +30,9 @@ function Products() {
   }, []);
 
   const branches = [...new Set(products.map((product) => product.branch_name))];
-  const categories = [...new Set(products.map((product) => product.category_name))];
+  const categories = [
+    ...new Set(products.map((product) => product.category_name)),
+  ];
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.product_name
@@ -53,16 +54,16 @@ function Products() {
         product_name: product.product_name,
         quantity: 1,
         price: product.product_price,
-        user_name: userDetails.name, 
-        branch_name : product.branch_name,
-      }
+        user_name: userDetails.name,
+        branch_name: product.branch_name,
+      },
     };
     const jsonString = JSON.stringify(cartData);
     try {
       const response = await fetch("http://localhost:1337/api/carts", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
         },
         body: jsonString,
       });
@@ -73,7 +74,7 @@ function Products() {
         console.log(data);
         window.location.reload();
       } else {
-        const errorData = await response.text(); 
+        const errorData = await response.text();
         alert("Failed to add to cart!");
         console.error(errorData);
       }
@@ -94,38 +95,38 @@ function Products() {
   const handleConfirmOrder = async () => {
     const today = new Date();
     const formattedDate = today.toISOString().split("T")[0];
-      const cartData = {
-        data: {
-          product_name: selectedProduct.product_name,
-          quantity: quantity,
-          total: selectedProduct.product_price * quantity,
-          customer_name: userDetails.name,
-          date: formattedDate,
-          branch_name: selectedProduct.branch_name,
+    const cartData = {
+      data: {
+        product_name: selectedProduct.product_name,
+        quantity: quantity,
+        total: selectedProduct.product_price * quantity,
+        customer_name: userDetails.name,
+        date: formattedDate,
+        branch_name: selectedProduct.branch_name,
+      },
+    };
+
+    const jsonString = JSON.stringify(cartData);
+
+    try {
+      const response = await fetch("http://localhost:1337/api/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      };
-  
-      const jsonString = JSON.stringify(cartData);
-  
-      try {
-        const response = await fetch("http://localhost:1337/api/transactions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: jsonString,
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Item processed:", data);
-        } else {
-          const errorData = await response.text();
-          console.error("Failed to add item:", errorData);
-        }
-      } catch (error) {
-        console.error("Error:", error);
+        body: jsonString,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Item processed:", data);
+      } else {
+        const errorData = await response.text();
+        console.error("Failed to add item:", errorData);
       }
+    } catch (error) {
+      console.error("Error:", error);
+    }
     alert("Item Buy Successful!");
     window.location.reload();
   };
@@ -145,13 +146,16 @@ function Products() {
         <div className="container mx-auto px-8">
           <div className="mb-8 text-end">
             <div className="flex justify-between gap-4">
-              <h1 className="text-2xl font-bold">| Our Products</h1>
+              <h1 className="text-2xl font-bold flex gap-2">
+                <AiFillProduct className="mt-1" />
+                Our Products
+              </h1>
               <div className="flex gap-3">
                 <select
                   onChange={(e) => setSelectedBranch(e.target.value)}
                   className="border border-[#4B3D8F] rounded-md p-2"
                 >
-                  <option value="">Select Branch</option>
+                  <option value="">All Branches</option>
                   {branches.map((branch) => (
                     <option key={branch} value={branch}>
                       {branch}
@@ -162,7 +166,7 @@ function Products() {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="border border-[#4B3D8F] rounded-md p-2"
                 >
-                  <option value="">Select Category</option>
+                  <option value="">All Categories</option>
                   {categories.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -201,7 +205,7 @@ function Products() {
                 <div className="flex flex-col gap-4">
                   <button
                     onClick={() => handleCheckoutClick(product)}
-                    className="bg-[#4B3D8F] hover:bg-[#3D2F7F] text-white px-4 py-2 rounded-md w-full"
+                    className="bg-[#4B3D8F] hover:bg-[#3D2F7F] font-bold text-white px-4 py-2 rounded-md w-full"
                   >
                     Check Out
                   </button>
@@ -211,32 +215,114 @@ function Products() {
           </div>
         </div>
       </section>
+
+      <footer className="bg-[#4B3D8F] text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">About Bazzar</h3>
+              <p className="text-gray-300">
+                Bazzar is your one-stop shop for all your needs. Discover the
+                latest trends, unbeatable deals, and convenience delivered to
+                your doorstep.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>Shop Products</li>
+                <li>Purchase History</li>
+                <li>About Us</li>
+                <li>Contact Us</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-4">Get in Touch</h3>
+              <p className="text-gray-300">Email: support@bazzar.com</p>
+              <p className="text-gray-300">Phone: +1 (800) 123-4567</p>
+              <div className="flex space-x-4 mt-4">
+                <a
+                  href="#"
+                  className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#4B3D8F]"
+                  aria-label="Facebook"
+                >
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                <a
+                  href="#"
+                  className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#4B3D8F]"
+                  aria-label="Twitter"
+                >
+                  <i className="fab fa-twitter"></i>
+                </a>
+                <a
+                  href="#"
+                  className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#4B3D8F]"
+                  aria-label="Instagram"
+                >
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a
+                  href="#"
+                  className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#4B3D8F]"
+                  aria-label="LinkedIn"
+                >
+                  <i className="fab fa-linkedin-in"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-700 mt-8 pt-4 text-center text-gray-300">
+            <p>
+              &copy; {new Date().getFullYear()} Bazzar. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+
+      {/* Modal Layout - Updated */}
       {isModalVisible && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
+          <div className="bg-white rounded-lg shadow-lg w-full md:w-3/4 lg:w-1/2 xl:w-1/3 p-8 relative">
             <button
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-[#4B3D8F] font-bold"
+              className="absolute top-4 right-4 text-[#4B3D8F] font-bold text-xl"
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold text-[#4B3D8F] mb-4">
+
+            <h2 className="text-2xl font-bold text-[#4B3D8F] mb-6 text-center">
               Review Your Order
             </h2>
-            <div className="overflow-y-auto max-h-[70vh]">
-              <div className="flex flex-col">
-                <img className="h-60 w-50" src={selectedProduct.image} alt="" />
-                <h4 className="text-lg font-semibold text-[#4B3D8F]">
-                  {selectedProduct.name}
-                </h4>
-                <p className="text-sm text-gray-600">
+
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Product Image */}
+              <div className="flex-shrink-0 w-full md:w-1/3">
+                <img
+                  className="w-full h-auto rounded-md object-cover"
+                  src={selectedProduct.image}
+                  alt={selectedProduct.product_name}
+                />
+              </div>
+
+              {/* Product Information */}
+              <div className="flex flex-col justify-between w-full md:w-2/3">
+                <h3 className="text-xl font-semibold text-[#4B3D8F] mb-4">
+                  {selectedProduct.product_name}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
                   {selectedProduct.description}
                 </p>
-                <p className="text-sm font-bold text-[#4B3D8F] mb-4">
+                <p className="text-lg font-bold text-[#4B3D8F] mb-4">
                   Price: {selectedProduct.product_price}
                 </p>
-                <div className="flex items-center justify-start gap-3">
-                  <label htmlFor="quantity" className="text-sm text-[#4B3D8F]">
+
+                {/* Quantity Selector */}
+                <div className="flex items-center gap-4 mb-6">
+                  <label
+                    htmlFor="quantity"
+                    className="text-sm text-[#4B3D8F] font-medium"
+                  >
                     Quantity:
                   </label>
                   <input
@@ -244,28 +330,35 @@ function Products() {
                     value={quantity}
                     min="1"
                     onChange={handleQuantityChange}
-                    className="border border-[#4B3D8F] rounded-md p-2 w-16"
+                    className="border border-[#4B3D8F] rounded-md p-2 w-20 text-center"
                   />
                 </div>
-                <div className="mt-4 text-sm text-[#4B3D8F]">
+
+                {/* Total Price Display */}
+                <div className="text-sm text-[#4B3D8F] mb-6">
                   <p>
                     <strong>Total Quantity:</strong> {quantity}
                   </p>
                   <p>
-                    <strong>Total Price:</strong> {selectedProduct.price} x{" "}
-                    {quantity} ={" "}
-                    {parseFloat(selectedProduct.product_price.slice(1)) * quantity}
+                    <strong>Total Price:</strong> ₱
+                    {(
+                      parseFloat(
+                        selectedProduct.product_price.replace("₱", "").trim()
+                      ) * quantity
+                    ).toFixed(2)}
                   </p>
                 </div>
+
+                {/* Confirm Order Button */}
+                <div className="text-right">
+                  <button
+                    onClick={handleConfirmOrder}
+                    className="bg-[#4B3D8F] hover:bg-[#3D2F7F] text-white px-6 py-3 rounded-md w-full md:w-auto"
+                  >
+                    Confirm Order
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="text-right mt-6">
-              <button
-                onClick={handleConfirmOrder}
-                className="bg-[#4B3D8F] hover:bg-[#3D2F7F] text-white px-6 py-2 rounded-md"
-              >
-                Confirm Order
-              </button>
             </div>
           </div>
         </div>

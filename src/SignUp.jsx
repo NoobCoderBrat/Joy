@@ -21,8 +21,8 @@ function SignUp() {
         name: name,
         email: email,
         password: password,
-      }
-    }
+      },
+    };
     const jsonString = JSON.stringify(jsonData);
     try {
       const response = await fetch("http://localhost:1337/api/customers", {
@@ -37,7 +37,7 @@ function SignUp() {
         alert("Registration successful!");
         navigate("/");
       } else {
-        const errorData = await response.text(); 
+        const errorData = await response.text();
         alert("Registration failed!");
         console.error(errorData);
       }
@@ -48,7 +48,7 @@ function SignUp() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen ">
+    <div className="flex justify-center items-center min-h-screen bg-base-200">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm border">
         <div className="flex justify-center mb-6">
           <a href="/" className="text-3xl font-bold text-[#4B3D8F]">
@@ -56,7 +56,7 @@ function SignUp() {
           </a>
         </div>
         <form onSubmit={handleSubmit}>
-        <div className="mb-2">
+          <div className="mb-2">
             <input
               type="text"
               id="name"
@@ -130,18 +130,14 @@ function SignUp() {
               Sign up
             </button>
           </div>
-          <div className="divider before:bg-black after:bg-black font-bold">
-            or
-          </div>
-          <div className="text-center mt-4">
-            <Link to="/">
-              <button
-                type="submit"
-                className="w-full py-2 text-white rounded-lg bg-[#4B3D8F]"
-              >
-                Login instead
-              </button>
-            </Link>
+
+          <div className="text-center mt-5">
+            <p className="text-sm">
+              Already have an account? &nbsp;
+              <Link to="/" className="underline">
+                Sign in
+              </Link>
+            </p>
           </div>
         </form>
       </div>
